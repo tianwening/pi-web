@@ -20,7 +20,7 @@
     "dev": "node scripts/dev.js",
     "build": "next build --webpack",
     "desktop:prepare": "node scripts/prepare-desktop.js",
-    "electron:dev": "electron .",
+    "electron:dev": "node scripts/electron-dev.js",
     "desktop:start": "node scripts/start-desktop.js",
     "desktop:pack": "npm run build && npm run desktop:prepare && electron-builder --dir",
     "desktop:dist": "npm run build && npm run desktop:prepare && electron-builder",

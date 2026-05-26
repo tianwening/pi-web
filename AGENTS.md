@@ -4,10 +4,12 @@
 
 ```bash
 npm run dev   # port 30141
+npm run electron:dev # restarts port 30141 dev server and opens Electron
 ```
 
 Typecheck: `node_modules/.bin/tsc --noEmit`  
 Lint: `npm run lint`  
+Electron dev: `npm run electron:dev` terminates any existing listener on port 30141, starts the Next dev server, waits for it, then opens Electron.
 **Never run `next build` during dev** — pollutes `.next/` and breaks `npm run dev`.
 
 ---
@@ -106,6 +108,7 @@ bin/
 
 scripts/
   dev.js              starts next dev --webpack on port 30141; re-execs out of Codex bundled Node when possible
+  electron-dev.js     terminates any existing port 30141 listener, starts dev.js, waits for readiness, then starts Electron
   prepare-desktop.js  copies standalone Next output for Electron packaging
   start-desktop.js    starts Electron with PI_WEB_ELECTRON_MODE=production
 
@@ -171,7 +174,7 @@ OAuth state comes from `AuthStorage` via `/api/auth/providers`. API-key provider
 `ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short Web Audio completion sound.
 
 ### Desktop packaging
-`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; development Electron expects the Next dev server to already be running. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output.
+`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; `npm run electron:dev` owns the development flow by terminating an existing port 30141 listener, starting the Next dev server, and then opening Electron. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output.
 
 ---
 

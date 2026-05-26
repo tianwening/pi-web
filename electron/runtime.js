@@ -14,7 +14,7 @@ function getRuntimeMode({ env = process.env, isPackaged }) {
 function getDevServerUrl({ env = process.env } = {}) {
   if (env.PI_WEB_DEV_SERVER_URL) return env.PI_WEB_DEV_SERVER_URL;
   const port = env.PI_WEB_DEV_SERVER_PORT || env.PORT || DEFAULT_DEV_SERVER_PORT;
-  return `http://127.0.0.1:${port}`;
+  return `http://localhost:${port}`;
 }
 
 function getServerPath(appRoot) {

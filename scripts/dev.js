@@ -10,7 +10,8 @@ const path = require("path");
 
 const pkgDir = path.join(__dirname, "..");
 const nextBin = require.resolve("next/dist/bin/next", { paths: [pkgDir] });
-const defaultArgs = ["dev", "--webpack", "-p", "30141"];
+const devServerPort = process.env.PI_WEB_DEV_SERVER_PORT || process.env.PORT || "30141";
+const defaultArgs = ["dev", "--webpack", "-p", devServerPort];
 
 function findAlternateNode() {
   const current = fs.realpathSync.native(process.execPath);

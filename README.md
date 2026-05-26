@@ -61,8 +61,10 @@ PORT=8080 pi-web                 # 也支持环境变量
 ```bash
 npm install
 npm run dev        # Next dev server，端口 30141，使用 webpack
+npm run electron:dev # 自动重启 30141 dev server 并打开 Electron
 npm run lint       # ESLint
 node --test electron/runtime.test.js
+node --test scripts/electron-dev.test.js
 node_modules/.bin/tsc --noEmit
 ```
 
@@ -71,7 +73,7 @@ node_modules/.bin/tsc --noEmit
 ## 桌面应用
 
 ```bash
-npm run electron:dev       # 连接已启动的 npm run dev
+npm run electron:dev       # 终止已有 30141 dev server，重新启动 npm run dev，并打开 Electron
 npm run desktop:start      # 使用 production runtime 启动 Electron，需要已有构建产物
 npm run desktop:pack       # 构建并生成 unpacked app
 npm run desktop:dist       # 构建安装包
@@ -80,7 +82,7 @@ npm run desktop:dist:win
 npm run desktop:dist:linux
 ```
 
-Electron 开发模式要求先启动 `npm run dev`。`desktop:start` 会设置 `PI_WEB_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会运行 standalone Next server，并绑定到本机随机端口。
+Electron 开发命令会自动管理开发服务器：先释放默认端口 `30141`，再启动 Next dev server，最后打开 Electron 并连接该服务器。`desktop:start` 会设置 `PI_WEB_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会运行 standalone Next server，并绑定到本机随机端口。
 
 ## 项目结构
 
@@ -109,6 +111,7 @@ bin/
   pi-web.js          # npm CLI 入口
 scripts/
   dev.js             # 开发服务器启动脚本
+  electron-dev.js    # 自动重启 dev server 并启动 Electron
   prepare-desktop.js # Electron 打包前准备
   start-desktop.js   # production runtime 启动 Electron
 electron/

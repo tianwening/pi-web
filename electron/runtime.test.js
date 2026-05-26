@@ -39,7 +39,7 @@ test("builds the development server URL from env overrides", () => {
     getDevServerUrl({
       env: { PI_WEB_DEV_SERVER_PORT: "3030" },
     }),
-    "http://127.0.0.1:3030",
+    "http://localhost:3030",
   );
 });
 
