@@ -3,12 +3,22 @@
 ## Quick Start
 
 ```bash
-npm run dev   # port 3030
+npm run dev   # port 30141
 ```
 
 Typecheck: `node_modules/.bin/tsc --noEmit`  
-Lint: `node node_modules/next/dist/bin/next lint`  
+Lint: `npm run lint`  
 **Never run `next build` during dev** — pollutes `.next/` and breaks `npm run dev`.
+
+---
+
+## Hard Constraints
+
+- Do not batch-delete files or directories. Never use recursive delete, glob delete, `find ... -delete`, `find ... -exec rm ...`, `xargs rm`, or equivalent bulk deletion commands.
+- If a file must be deleted, confirm it is one explicit ordinary file path and delete only that one file. Do not delete directories.
+- Keep documentation in sync with behavior. Any feature, route, script, packaging, workflow, or user-visible behavior change must update both `AGENTS.md` and the relevant README markdown in the same change.
+- Treat session files as user data. Prefer read-only inspection unless the route or feature explicitly owns the write, such as rename, delete/reparent, compact, fork, or skill/model config edits.
+- Do not revert unrelated worktree changes. This repo may have local changes in progress.
 
 ---
 
@@ -20,7 +30,7 @@ Browser                Next.js Server              AgentSession (in-process)
   ├─ GET /api/sessions ────▶ reads ~/.pi/agent/sessions/   │
   ├─ GET /api/sessions/[id] reads .jsonl file directly     │
   │                        │                               │
-  ├─ send message ─────────▶ POST /api/agent/[id]          │
+  ├─ send / steer / follow ▶ POST /api/agent/[id]          │
   │                        │   startRpcSession() ─────────▶│ createAgentSession()
   │                        │   session.send(cmd) ─────────▶│ session.prompt()
   │                        │                               │
@@ -46,15 +56,28 @@ app/api/
   agent/[id]/route.ts             GET state | POST any command
   agent/[id]/events/route.ts      GET SSE stream
   files/[...path]/route.ts        GET file contents for viewer
+  home/route.ts                   GET user home directory
+  default-cwd/route.ts            POST create ~/pi-cwd-YYYYMMDD
   models/route.ts                 GET { models, modelList, defaultModel }
   models-config/route.ts          GET/POST — read/write ~/.pi/agent/models.json
+  skills/route.ts                 GET skills for cwd | PATCH disable-model-invocation
+  skills/search/route.ts          POST search skills.sh; falls back to npx skills find
+  skills/install/route.ts         POST npx skills add, global or project scope
+  auth/providers/route.ts         GET OAuth provider login state
+  auth/all-providers/route.ts     GET API-key provider configuration state
+  auth/login/[provider]/route.ts  POST start OAuth flow
+  auth/logout/[provider]/route.ts POST remove provider auth
+  auth/api-key/[provider]/route.ts GET/POST/DELETE provider API key
 
 lib/
   rpc-manager.ts      AgentSessionWrapper + registry + startRpcSession
-  session-reader.ts   parse .jsonl; getModelNameMap/getModelList/getDefaultModel
+  session-reader.ts   SessionManager-backed listing/context; path cache
+  agent-client.ts     typed client helpers for agent/session routes
+  file-paths.ts       cross-platform file path display/API encoding helpers
+  npx.ts              shell-free cross-platform npx wrapper
   types.ts            shared TypeScript types
+  pi-types.ts         local AgentSession/tool type shims
   normalize.ts        normalizeToolCalls() — field name mismatch between file format and our types
-  system-prompt-off.ts  minimal system prompt when all tools are disabled
 
 components/
   AppShell.tsx        layout + URL state + tab management
@@ -66,9 +89,29 @@ components/
   ChatMinimap.tsx     scroll minimap alongside the message list
   ToolPanel.tsx       exports PRESET_NONE/DEFAULT/FULL + getPresetFromTools
   ModelsConfig.tsx    modal for editing models.json (opened from sidebar bottom)
+  SkillsConfig.tsx    modal for listing/searching/installing/toggling skills
   FileExplorer.tsx    file tree inside sidebar
+  FileIcons.tsx       extension-aware file/folder icons
   FileViewer.tsx      file content in a tab
   TabBar.tsx          tab bar (Chat + open file tabs)
+
+hooks/
+  useAgentSession.ts  agent/session request helper hook
+  useAudio.ts         done sound state + Web Audio playback
+  useDragDrop.ts      image drag/drop plumbing
+  useTheme.ts         light/dark theme with view-transition animation
+
+bin/
+  pi-web.js           packaged CLI wrapper around next start
+
+scripts/
+  dev.js              starts next dev --webpack on port 30141; re-execs out of Codex bundled Node when possible
+  prepare-desktop.js  copies standalone Next output for Electron packaging
+
+electron/
+  main.js             Electron shell; starts packaged Next server or attaches to dev server
+  runtime.js          runtime path/mode helpers
+  runtime.test.js     runtime helper tests
 ```
 
 ---
@@ -79,6 +122,8 @@ components/
 - One `AgentSessionWrapper` per session id, keyed in `globalThis.__piSessions`
 - `globalThis` survives Next.js hot-reload; plain module-level Map does not
 - Idle timeout: 10 minutes. Concurrent `startRpcSession()` calls share a single start Promise (`globalThis.__piStartLocks`)
+- New sessions are created with `SessionManager.create(cwd)` and then cached under pi's real session id after startup.
+- `get_state` also exposes streaming/compaction/retry state, active model, context usage, system prompt, and thinking level.
 
 ### Fork must destroy the wrapper immediately
 `AgentSession.fork()` **mutates the wrapper's inner state in-place** — after fork, `inner.sessionId` is the *new* session's id. If the wrapper stays alive in the registry under the old id, the next request gets the already-forked state and subsequent forks produce a corrupt `parentSession` chain.
@@ -96,7 +141,9 @@ components/
 Pi stores toolCall blocks as `{type:"toolCall", id, name, arguments}` but `ToolCallContent` uses `{toolCallId, toolName, input}`. `normalizeToolCalls()` in `lib/normalize.ts` handles this — called in both `session-reader.ts` (file load) and `ChatWindow.handleAgentEvent()` (streaming).
 
 ### New session tool preset
-Tool names are passed at session creation (`POST /api/agent/new` → `toolNames[]`). For existing sessions, the active preset is inferred on mount via `get_tools` → `getPresetFromTools()`. When tools are fully disabled (`toolNames = []`), `rpc-manager.ts` injects a minimal system prompt via `system-prompt-off.ts` + `DefaultResourceLoader`.
+Tool names are passed at session creation (`POST /api/agent/new` → `toolNames[]`). For existing sessions, the active preset is inferred on mount via `get_tools` → `getPresetFromTools()`.
+
+Current behavior: `startRpcSession()` passes all built-in coding tool names by default, narrows with `inner.setActiveToolsByName(toolNames)` for specific presets, and clears `inner.agent.state.systemPrompt` when tools are disabled so the System panel can accurately show an empty prompt.
 
 ### Model defaults for new sessions
 `GET /api/models` returns `defaultModel` read from `~/.pi/agent/settings.json`. `ChatWindow` pre-selects this on mount for new sessions.
@@ -107,8 +154,23 @@ On `ChatWindow` mount, `GET /api/agent/[id]` is called. If `state.isStreaming ==
 ### Compaction SSE events
 Newer pi emits `compaction_start` / `compaction_end`; older versions emitted `auto_compaction_start` / `auto_compaction_end`. `handleAgentEvent` accepts both sets to keep `isCompacting` in sync. Manual compact is a blocking POST — the button stays disabled until the response returns.
 
-### Orphaned sessions
-Sessions whose first line can't be parsed as a valid header are marked `orphaned: true` in the API response — displayed with an "incomplete" badge in the sidebar and not clickable.
+### Session listing
+Session listing is delegated to `SessionManager.listAll()`. The app maps pi session paths to ids, fills `globalThis.__piSessionPathCache`, and resolves `parentSessionId` from `parentSessionPath`.
+
+### Delete semantics
+`DELETE /api/sessions/[id]` deletes only the resolved `.jsonl` file with `unlinkSync(filePath)`. Before unlinking it scans sibling session files and rewrites direct children so their `parentSession` points at the deleted session's parent. Do not replace this with directory or glob deletion.
+
+### Skills management
+`SkillsConfig` loads skills through `DefaultResourceLoader`, matching AgentSession startup behavior. Toggling visibility edits only the `disable-model-invocation` frontmatter key in the target `SKILL.md`. Installing skills uses `runNpx(["skills", "add", ...])` without a shell; search prefers `skills.sh` and falls back to `npx skills find`.
+
+### Auth and models
+OAuth state comes from `AuthStorage` via `/api/auth/providers`. API-key provider state comes from `ModelRegistry` via `/api/auth/all-providers`, excluding OAuth-only providers and custom `models.json` keys. `ModelsConfig` edits the agent data dir `models.json`.
+
+### Images, steering, follow-ups, and audio
+`ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short Web Audio completion sound.
+
+### Desktop packaging
+`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; development Electron expects the Next dev server to already be running.
 
 ---
 
