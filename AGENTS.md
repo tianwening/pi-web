@@ -107,6 +107,7 @@ bin/
 scripts/
   dev.js              starts next dev --webpack on port 30141; re-execs out of Codex bundled Node when possible
   prepare-desktop.js  copies standalone Next output for Electron packaging
+  start-desktop.js    starts Electron with PI_WEB_ELECTRON_MODE=production
 
 electron/
   main.js             Electron shell; starts packaged Next server or attaches to dev server
@@ -170,7 +171,7 @@ OAuth state comes from `AuthStorage` via `/api/auth/providers`. API-key provider
 `ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short Web Audio completion sound.
 
 ### Desktop packaging
-`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; development Electron expects the Next dev server to already be running.
+`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; development Electron expects the Next dev server to already be running. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output.
 
 ---
 
