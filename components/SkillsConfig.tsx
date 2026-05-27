@@ -587,7 +587,9 @@ export function SkillsConfig({
         position: "fixed",
         inset: 0,
         zIndex: 1000,
-        background: "rgba(0,0,0,0.35)",
+        background: "rgba(0,0,0,0.28)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -600,12 +602,12 @@ export function SkillsConfig({
         style={{
           width: 860,
           height: "78vh",
-          background: "var(--bg)",
+          background: "var(--bg-panel)",
           border: "1px solid var(--border)",
-          borderRadius: 10,
+          borderRadius: "var(--radius-lg)",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+          boxShadow: "var(--shadow-popover)",
           overflow: "hidden",
         }}
       >

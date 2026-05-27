@@ -1,20 +1,20 @@
-# pi-web
+# Pi Agent
 
-[pi 编程智能体](https://github.com/badlogic/pi-mono) 的网页/桌面界面。在浏览器或 Electron 壳中浏览会话、与智能体对话、分叉对话、切换消息分支、管理模型和 Skills。
+[pi 编程智能体](https://github.com/badlogic/pi-mono) 的跨端操作界面。用于浏览会话、与智能体对话、分叉对话、切换消息分支、管理模型和 Skills；既可通过本机服务访问，也可通过 Electron 打包运行，后续可继续扩展 PWA 能力。
 
 ## 快速开始
 
 **无需安装，直接运行 CLI：**
 
 ```bash
-npx @agegr/pi-web@latest
+npx @agegr/pi-agent@latest
 ```
 
 **或全局安装后使用：**
 
 ```bash
-npm install -g @agegr/pi-web
-pi-web
+npm install -g @agegr/pi-agent
+pi-agent
 ```
 
 启动后打开 [http://localhost:30141](http://localhost:30141)。
@@ -24,11 +24,11 @@ CLI 会在 Next.js 准备好后自动尝试打开浏览器。
 **可选参数与环境变量：**
 
 ```bash
-pi-web --port 8080               # 自定义端口
-pi-web --hostname 127.0.0.1      # 仅本机访问
-pi-web -p 8080 -H 127.0.0.1     # 组合使用
+pi-agent --port 8080               # 自定义端口
+pi-agent --hostname 127.0.0.1      # 仅本机访问
+pi-agent -p 8080 -H 127.0.0.1     # 组合使用
 
-PORT=8080 pi-web                 # 也支持环境变量
+PORT=8080 pi-agent                 # 也支持环境变量
 ```
 
 ## 功能介绍
@@ -47,12 +47,15 @@ PORT=8080 pi-web                 # 也支持环境变量
 - **文件浏览器** — 从侧边栏浏览当前 cwd，打开文件标签页，或将路径插入输入框
 - **状态面板** — 顶栏显示 token、缓存、费用和上下文窗口占用
 - **主题与声音** — 支持亮/暗主题切换和任务完成提示音
+- **Apple 风格界面** — 使用本地系统字体、纸白/深墨色系、系统蓝强调色、毛玻璃顶栏和胶囊控件
 
 ## 注意事项
 
 - **数据目录** — 默认读取 `~/.pi/agent/sessions` 下的会话文件。可通过环境变量 `PI_CODING_AGENT_DIR` 指定其他目录。
 - **模型配置** — 从智能体数据目录下的 `models.json` 读取可用模型，可在侧边栏底部的「Models」面板中编辑。
 - **Skills 配置** — Skills 面板使用 pi 的 `DefaultResourceLoader`，会合并 settings、包内 Skills 和项目 Skills；安装时调用 `npx skills add --agent pi`。
+- **项目 Skills** — 仓库内 `.pi/skills/awesome-design-md` 提供 VoltAgent/awesome-design-md 的 DESIGN.md 使用指引，可在前端设计任务中按站点 slug 拉取设计系统参考。
+- **界面视觉系统** — 全局 CSS token 采用 Apple-inspired interface chrome：亮色 `#f5f5f7` 画布、`#1d1d1f` 文本、`#0066cc` 操作蓝，暗色使用 `#2997ff` 链接/强调色。
 - **会话删除** — 只删除单个 `.jsonl` 会话文件，并会把直接子会话 re-parent 到被删会话的父会话。
 - **默认工作目录** — 新建默认 cwd 时会创建 `~/pi-cwd-YYYYMMDD`。
 
@@ -65,6 +68,7 @@ npm run electron:dev # 自动重启 30141 dev server 并打开 Electron
 npm run lint       # ESLint
 node --test electron/runtime.test.js
 node --test scripts/electron-dev.test.js
+node --test scripts/node-runtime.test.js
 node_modules/.bin/tsc --noEmit
 ```
 
@@ -82,7 +86,15 @@ npm run desktop:dist:win
 npm run desktop:dist:linux
 ```
 
-Electron 开发命令会自动管理开发服务器：先释放默认端口 `30141`，再启动 Next dev server，最后打开 Electron 并连接该服务器。`desktop:start` 会设置 `PI_WEB_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会运行 standalone Next server，并绑定到本机随机端口。
+Electron 开发命令会自动管理开发服务器：先释放默认端口 `30141`，再启动 Next dev server，最后打开 Electron 并连接该服务器。`desktop:start` 会设置 `PI_AGENT_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会运行 standalone Next server，并绑定到本机随机端口。
+
+桌面构建不依赖 Google Fonts；界面使用本地系统字体栈，避免离线或受限网络环境下 `next/font` 拉取字体导致构建失败。
+
+桌面打包命令会检测是否运行在 Codex.app 内置 Node 下；如果是，会自动 re-exec 到 PATH 中的其他 Node，再运行 Next build、prepare 和 electron-builder，避免 macOS native addon 的 Team ID 校验失败。
+
+打包后的 Electron 在启动 standalone server 前会合并用户 login shell 的 `PATH` 和常见 Node/npm 路径，确保模型调用、Skills 安装等服务端流程可以找到 `npm`/`npx`/用户工具链。服务端 stdout/stderr 会写入 Electron Logs 目录下的 `server/server.log`，用于排查 packaged app 中的后端错误。
+
+`dist/` 是桌面打包产物目录，不参与 ESLint 检查。
 
 ## 项目结构
 
@@ -100,6 +112,8 @@ app/
     home/          # 返回用户 home 目录
 components/        # UI 组件
 hooks/             # agent 请求、音频、拖放、主题等 hooks
+.pi/
+  skills/awesome-design-md/ # VoltAgent/awesome-design-md DESIGN.md project skill
 lib/
   session-reader.ts  # SessionManager-backed 会话列表、上下文构建和路径缓存
   rpc-manager.ts     # 管理 AgentSession 生命周期
@@ -108,10 +122,12 @@ lib/
   npx.ts             # shell-free npx 调用封装
   types.ts / pi-types.ts
 bin/
-  pi-web.js          # npm CLI 入口
+  pi-agent.js          # npm CLI 入口
 scripts/
   dev.js             # 开发服务器启动脚本
   electron-dev.js    # 自动重启 dev server 并启动 Electron
+  desktop-pack.js    # 自动跳出 Codex Node 后运行桌面打包链
+  node-runtime.js    # Node runtime 检测与 re-exec helper
   prepare-desktop.js # Electron 打包前准备
   start-desktop.js   # production runtime 启动 Electron
 electron/

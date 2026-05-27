@@ -14,7 +14,7 @@ const child = spawn(electronPath, ["."], {
   stdio: "inherit",
   env: {
     ...process.env,
-    PI_WEB_ELECTRON_MODE: "production",
+    PI_AGENT_ELECTRON_MODE: "production",
   },
 });
 

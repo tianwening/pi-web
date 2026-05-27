@@ -23,11 +23,13 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
     <div
       style={{
         display: "flex",
-        alignItems: "flex-end",
-        background: "var(--bg-panel)",
+        alignItems: "center",
+        background: "transparent",
         overflowX: "auto",
         flexShrink: 0,
-        height: 36,
+        height: 44,
+        padding: "6px 8px",
+        gap: 6,
       }}
     >
       {tabs.map((tab) => {
@@ -40,11 +42,12 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
               display: "flex",
               alignItems: "center",
               gap: 6,
-              height: 36,
+              height: 32,
               paddingLeft: 12,
               paddingRight: 6,
-              borderRight: "1px solid var(--border)",
-              background: isActive ? "var(--bg)" : "var(--bg-panel)",
+              border: `1px solid ${isActive ? "var(--border)" : "transparent"}`,
+              borderRadius: "var(--radius-pill)",
+              background: isActive ? "var(--bg-panel)" : "transparent",
               cursor: "pointer",
               fontSize: 12,
               color: isActive ? "var(--text)" : "var(--text-muted)",
@@ -64,7 +67,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 flex: 1,
-                fontWeight: isActive ? 500 : 400,
+                fontWeight: isActive ? 600 : 400,
               }}
               title={tab.filePath}
             >
@@ -79,7 +82,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab }: Props) {
                 width: 16, height: 16,
                 background: hoveredClose === tab.id ? "var(--bg-hover)" : "transparent",
                 border: "none",
-                borderRadius: 3,
+                borderRadius: "50%",
                 color: hoveredClose === tab.id ? "var(--text)" : "var(--text-dim)",
                 cursor: "pointer",
                 padding: 0,

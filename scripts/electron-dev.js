@@ -97,7 +97,7 @@ function spawnDevServer(port) {
     stdio: "inherit",
     env: {
       ...process.env,
-      PI_WEB_DEV_SERVER_PORT: port,
+      PI_AGENT_DEV_SERVER_PORT: port,
       PORT: port,
     },
   });
@@ -110,14 +110,14 @@ function spawnElectron(url) {
     stdio: "inherit",
     env: {
       ...process.env,
-      PI_WEB_ELECTRON_MODE: "development",
-      PI_WEB_DEV_SERVER_URL: url,
+      PI_AGENT_ELECTRON_MODE: "development",
+      PI_AGENT_DEV_SERVER_URL: url,
     },
   });
 }
 
 async function main() {
-  const port = process.env.PI_WEB_DEV_SERVER_PORT || process.env.PORT || DEFAULT_PORT;
+  const port = process.env.PI_AGENT_DEV_SERVER_PORT || process.env.PORT || DEFAULT_PORT;
   const url = getDevServerUrl(port);
 
   await stopExistingDevServer(port);

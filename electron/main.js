@@ -11,7 +11,9 @@ const net = require("net");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require("path");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getDevServerUrl, getRuntimeMode, getServerPath } = require("./runtime");
+const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { buildServerEnv, getDevServerUrl, getRuntimeMode, getServerPath } = require("./runtime");
 
 let mainWindow = null;
 let serverProcess = null;
@@ -67,18 +69,22 @@ function waitForServer(url, timeoutMs = 30000) {
 
 function startNextServer(port) {
   const serverPath = getServerPath(getAppRoot());
-  const env = {
-    ...process.env,
+  const env = buildServerEnv(process.env, {
     ELECTRON_RUN_AS_NODE: "1",
     HOSTNAME: "127.0.0.1",
     PORT: port,
     NODE_ENV: "production",
-  };
+  });
+
+  const logDir = path.join(app.getPath("logs"), "server");
+  fs.mkdirSync(logDir, { recursive: true });
+  const logPath = path.join(logDir, "server.log");
+  const logFd = fs.openSync(logPath, "a");
 
   serverProcess = spawn(process.execPath, [serverPath], {
     cwd: path.dirname(serverPath),
     env,
-    stdio: "ignore",
+    stdio: ["ignore", logFd, logFd],
   });
 
   serverProcess.on("exit", () => {
@@ -121,7 +127,7 @@ async function createWindow() {
     height: 840,
     minWidth: 960,
     minHeight: 640,
-    title: "Pi Agent Web",
+    title: "Pi Agent",
     backgroundColor: "#0b0f14",
     webPreferences: {
       contextIsolation: true,

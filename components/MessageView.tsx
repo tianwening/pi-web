@@ -118,7 +118,7 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
 
   return (
     <div
-      style={{ marginBottom: 16, display: "flex", flexDirection: "column", alignItems: "flex-end" }}
+      style={{ marginBottom: 18, display: "flex", flexDirection: "column", alignItems: "flex-end" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -128,9 +128,9 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
             flex: 1,
             minWidth: 0,
             background: "var(--user-bg)",
-            border: "1px solid rgba(59,130,246,0.2)",
-            borderRadius: 12,
-            padding: "8px 12px",
+            border: "1px solid rgba(0,102,204,0.18)",
+            borderRadius: 18,
+            padding: "9px 13px",
             fontSize: 14,
             lineHeight: 1.6,
             color: "var(--text)",
@@ -157,7 +157,7 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
                     key={i}
                     src={src}
                     alt=""
-                    style={{ maxWidth: 240, maxHeight: 240, borderRadius: 6, objectFit: "contain", display: "block", border: "1px solid rgba(59,130,246,0.15)" }}
+                    style={{ maxWidth: 240, maxHeight: 240, borderRadius: 12, objectFit: "contain", display: "block", border: "1px solid rgba(0,102,204,0.16)" }}
                   />
                 );
               })}
@@ -187,7 +187,7 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
                 display: "flex", alignItems: "center", gap: 4,
                 padding: "3px 8px", height: 22,
                 background: "none", border: "none",
-                borderRadius: 5,
+                borderRadius: "var(--radius-pill)",
                 color: copied ? "var(--accent)" : "var(--text-dim)",
                 cursor: "pointer",
                 fontSize: 11, fontWeight: 400,
@@ -225,7 +225,7 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "3px 8px", height: 22,
                     background: "none", border: "none",
-                    borderRadius: 5,
+                    borderRadius: "var(--radius-pill)",
                     color: "var(--text-dim)",
                     cursor: "pointer",
                     fontSize: 11, fontWeight: 400,
@@ -251,7 +251,7 @@ function UserMessageView({ message, entryId, onFork, forking, onNavigate, prevAs
                     display: "flex", alignItems: "center", gap: 4,
                     padding: "3px 8px", height: 22,
                     background: "none", border: "none",
-                    borderRadius: 5,
+                    borderRadius: "var(--radius-pill)",
                     color: forking ? "var(--accent)" : "var(--text-dim)",
                     cursor: forking ? "not-allowed" : "pointer",
                     fontSize: 11, fontWeight: 400,
@@ -452,7 +452,7 @@ function AssistantMessageView({
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {blocks.map((block, i) => (
-          <BlockView key={i} block={block} toolResults={toolResults} isStreaming={isStreaming} streamingDuration={streamingDurations.get(i) ?? (block.type === "thinking" ? thinkingDurationFromFile : undefined)} toolCallDurations={toolCallDurations} />
+          <BlockView key={i} block={block} toolResults={toolResults} streamingDuration={streamingDurations.get(i) ?? (block.type === "thinking" ? thinkingDurationFromFile : undefined)} toolCallDurations={toolCallDurations} />
         ))}
       </div>
 
@@ -472,7 +472,7 @@ function AssistantMessageView({
               display: "flex", alignItems: "center", gap: 4,
               padding: "3px 8px", height: 22,
               background: "none", border: "none",
-              borderRadius: 5,
+              borderRadius: "var(--radius-pill)",
               color: copied ? "var(--accent)" : "var(--text-dim)",
               cursor: "pointer",
               fontSize: 11, fontWeight: 400,
@@ -505,7 +505,7 @@ function AssistantMessageView({
   );
 }
 
-function BlockView({ block, toolResults, isStreaming, streamingDuration, toolCallDurations }: { block: AssistantContentBlock; toolResults?: Map<string, ToolResultMessage>; isStreaming?: boolean; streamingDuration?: number; toolCallDurations?: Map<string, number> }) {
+function BlockView({ block, toolResults, streamingDuration, toolCallDurations }: { block: AssistantContentBlock; toolResults?: Map<string, ToolResultMessage>; streamingDuration?: number; toolCallDurations?: Map<string, number> }) {
   if (block.type === "text") {
     return <TextBlock block={block as TextContent} />;
   }
@@ -516,7 +516,7 @@ function BlockView({ block, toolResults, isStreaming, streamingDuration, toolCal
     const tc = block as ToolCallContent;
     const result = toolResults?.get(tc.toolCallId);
     const duration = toolCallDurations?.get(tc.toolCallId);
-    return <ToolCallBlock block={tc} result={result} isRunning={isStreaming && !result} duration={duration} />;
+    return <ToolCallBlock block={tc} result={result} duration={duration} />;
   }
   return null;
 }
@@ -537,9 +537,9 @@ function TextBlock({ block }: { block: TextContent }) {
             return (
               <code
                 style={{
-                  background: "var(--bg-selected)",
+                  background: "var(--tool-bg)",
                   padding: "1px 4px",
-                  borderRadius: 3,
+                  borderRadius: 6,
                   fontFamily: "var(--font-mono)",
                   fontSize: "0.9em",
                 }}
@@ -567,7 +567,7 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
     <div
       style={{
         border: "1px solid var(--border)",
-        borderRadius: 6,
+        borderRadius: 12,
         overflow: "hidden",
         fontSize: 13,
       }}
@@ -580,7 +580,7 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
           gap: 6,
           width: "100%",
           padding: "6px 10px",
-          background: "var(--bg-panel)",
+          background: "var(--tool-bg)",
           border: "none",
           color: "var(--text-muted)",
           cursor: "pointer",
@@ -601,7 +601,7 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
             fontSize: 12,
             lineHeight: 1.6,
             whiteSpace: "pre-wrap",
-            background: "var(--bg-panel)",
+            background: "var(--tool-bg)",
             borderTop: "1px solid var(--border)",
           }}
         >
@@ -613,7 +613,7 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
 }
 
 
-function ToolCallBlock({ block, result, isRunning, duration }: { block: ToolCallContent; result?: ToolResultMessage; isRunning?: boolean; duration?: number }) {
+function ToolCallBlock({ block, result, duration }: { block: ToolCallContent; result?: ToolResultMessage; duration?: number }) {
   const [expanded, setExpanded] = useState(false);
   const inputStr = JSON.stringify(block.input, null, 2);
 
@@ -627,11 +627,11 @@ function ToolCallBlock({ block, result, isRunning, duration }: { block: ToolCall
   return (
     <div
       style={{
-        borderRadius: 7,
+        borderRadius: 12,
         overflow: "hidden",
         fontSize: 12,
-        border: isError ? "1px solid rgba(248,113,113,0.45)" : "1px solid rgba(34,197,94,0.25)",
-        background: isError ? "rgba(248,113,113,0.05)" : "rgba(34,197,94,0.04)",
+        border: isError ? "1px solid rgba(255,59,48,0.34)" : "1px solid rgba(52,199,89,0.24)",
+        background: isError ? "rgba(255,59,48,0.06)" : "rgba(52,199,89,0.05)",
       }}
     >
       {/* ── Tool call header ── */}
@@ -652,7 +652,7 @@ function ToolCallBlock({ block, result, isRunning, duration }: { block: ToolCall
           minWidth: 0,
         }}
       >
-        <span style={{ color: isError ? "#f87171" : "#16a34a", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, flexShrink: 0 }}>
+        <span style={{ color: isError ? "#ff3b30" : "#34c759", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, flexShrink: 0 }}>
           {block.toolName}
         </span>
         <span style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
@@ -677,7 +677,7 @@ function ToolCallBlock({ block, result, isRunning, duration }: { block: ToolCall
             lineHeight: 1.5,
             overflow: "auto",
             background: "var(--bg-subtle)",
-            borderTop: isError ? "1px solid rgba(248,113,113,0.25)" : "1px solid rgba(34,197,94,0.2)",
+            borderTop: isError ? "1px solid rgba(255,59,48,0.24)" : "1px solid rgba(52,199,89,0.20)",
             whiteSpace: "pre-wrap",
             wordBreak: "break-all",
           }}
@@ -706,15 +706,15 @@ function PairedResult({ text, isEmpty, isError }: {
   return (
     <div
       style={{
-        borderTop: `1px solid ${isError ? "rgba(248,113,113,0.3)" : "rgba(34,197,94,0.15)"}`,
-        background: isError ? "rgba(248,113,113,0.04)" : "var(--bg-subtle)",
+        borderTop: `1px solid ${isError ? "rgba(255,59,48,0.28)" : "rgba(52,199,89,0.16)"}`,
+        background: isError ? "rgba(255,59,48,0.05)" : "var(--bg-subtle)",
       }}
     >
       <pre
         style={{
           margin: 0,
           padding: "8px 10px",
-          color: isError ? "#f87171" : (isEmpty ? "var(--text-dim)" : "var(--text-muted)"),
+          color: isError ? "#ff3b30" : (isEmpty ? "var(--text-dim)" : "var(--text-muted)"),
           fontSize: 12,
           lineHeight: 1.5,
           overflow: "auto",
@@ -784,7 +784,7 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
         position: "relative",
         marginTop: 4,
         marginBottom: 4,
-        borderRadius: 6,
+        borderRadius: 12,
         overflow: "hidden",
         border: "1px solid var(--border)",
       }}
@@ -792,7 +792,7 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
       <div
         style={{
           padding: "3px 10px",
-          background: "var(--bg-panel)",
+          background: "var(--tool-bg)",
           borderBottom: "1px solid var(--border)",
           fontSize: 11,
           color: "var(--text-dim)",
@@ -835,5 +835,3 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
     </div>
   );
 }
-
-

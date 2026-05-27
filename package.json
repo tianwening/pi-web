@@ -1,10 +1,10 @@
 {
-  "name": "@agegr/pi-web",
+  "name": "@agegr/pi-agent",
   "version": "0.6.11",
-  "description": "Web UI for the pi coding agent",
+  "description": "Interface for the pi coding agent",
   "main": "electron/main.js",
   "bin": {
-    "pi-web": "bin/pi-web.js"
+    "pi-agent": "bin/pi-agent.js"
   },
   "files": [
     "bin",
@@ -22,18 +22,18 @@
     "desktop:prepare": "node scripts/prepare-desktop.js",
     "electron:dev": "node scripts/electron-dev.js",
     "desktop:start": "node scripts/start-desktop.js",
-    "desktop:pack": "npm run build && npm run desktop:prepare && electron-builder --dir",
-    "desktop:dist": "npm run build && npm run desktop:prepare && electron-builder",
-    "desktop:dist:mac": "npm run build && npm run desktop:prepare && electron-builder --mac",
-    "desktop:dist:win": "npm run build && npm run desktop:prepare && electron-builder --win",
-    "desktop:dist:linux": "npm run build && npm run desktop:prepare && electron-builder --linux",
+    "desktop:pack": "node scripts/desktop-pack.js --dir",
+    "desktop:dist": "node scripts/desktop-pack.js",
+    "desktop:dist:mac": "node scripts/desktop-pack.js --mac",
+    "desktop:dist:win": "node scripts/desktop-pack.js --win",
+    "desktop:dist:linux": "node scripts/desktop-pack.js --linux",
     "start": "next start -p 30141",
     "lint": "eslint .",
     "release": "npm version patch --no-git-tag-version && npm run build && npm publish --access public"
   },
   "build": {
-    "appId": "works.earendil.pi-web",
-    "productName": "Pi Agent Web",
+    "appId": "works.earendil.pi-agent",
+    "productName": "Pi Agent",
     "asar": false,
     "files": [
       "electron/**/*",

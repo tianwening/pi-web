@@ -1,4 +1,4 @@
-# Pi Agent Web - Development Notes
+# Pi Agent - Development Notes
 
 ## Quick Start
 
@@ -11,6 +11,7 @@ Typecheck: `node_modules/.bin/tsc --noEmit`
 Lint: `npm run lint`  
 Electron dev: `npm run electron:dev` terminates any existing listener on port 30141, starts the Next dev server, waits for it, then opens Electron.
 **Never run `next build` during dev** — pollutes `.next/` and breaks `npm run dev`.
+Generated desktop package output under `dist/` is ignored by lint.
 
 ---
 
@@ -27,7 +28,7 @@ Electron dev: `npm run electron:dev` terminates any existing listener on port 30
 ## Architecture
 
 ```
-Browser                Next.js Server              AgentSession (in-process)
+Client                 Next.js Server              AgentSession (in-process)
   │                        │                               │
   ├─ GET /api/sessions ────▶ reads ~/.pi/agent/sessions/   │
   ├─ GET /api/sessions/[id] reads .jsonl file directly     │
@@ -99,18 +100,23 @@ components/
 
 hooks/
   useAgentSession.ts  agent/session request helper hook
-  useAudio.ts         done sound state + Web Audio playback
+  useAudio.ts         done sound state + audio playback
   useDragDrop.ts      image drag/drop plumbing
   useTheme.ts         light/dark theme with view-transition animation
 
+.pi/
+  skills/awesome-design-md/SKILL.md  project skill for using VoltAgent/awesome-design-md DESIGN.md references during frontend design tasks
+
 bin/
-  pi-web.js           packaged CLI wrapper around next start
+  pi-agent.js           packaged CLI wrapper around next start
 
 scripts/
   dev.js              starts next dev --webpack on port 30141; re-execs out of Codex bundled Node when possible
   electron-dev.js     terminates any existing port 30141 listener, starts dev.js, waits for readiness, then starts Electron
+  desktop-pack.js     re-execs out of Codex bundled Node, then runs Next build, prepare-desktop, and electron-builder
+  node-runtime.js     shared Codex bundled Node detection/re-exec helpers
   prepare-desktop.js  copies standalone Next output for Electron packaging
-  start-desktop.js    starts Electron with PI_WEB_ELECTRON_MODE=production
+  start-desktop.js    starts Electron with PI_AGENT_ELECTRON_MODE=production
 
 electron/
   main.js             Electron shell; starts packaged Next server or attaches to dev server
@@ -171,10 +177,10 @@ Session listing is delegated to `SessionManager.listAll()`. The app maps pi sess
 OAuth state comes from `AuthStorage` via `/api/auth/providers`. API-key provider state comes from `ModelRegistry` via `/api/auth/all-providers`, excluding OAuth-only providers and custom `models.json` keys. `ModelsConfig` edits the agent data dir `models.json`.
 
 ### Images, steering, follow-ups, and audio
-`ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short Web Audio completion sound.
+`ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short completion sound.
 
 ### Desktop packaging
-`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; `npm run electron:dev` owns the development flow by terminating an existing port 30141 listener, starting the Next dev server, and then opening Electron. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output.
+`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; `npm run electron:dev` owns the development flow by terminating an existing port 30141 listener, starting the Next dev server, and then opening Electron. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output. Desktop packaging scripts must re-exec out of Codex.app bundled Node before loading native build dependencies such as Next SWC, lightningcss, or iconv-corefoundation. Desktop builds must not depend on Google Fonts or other build-time external font downloads; use the local system font stack. Packaged Electron must start the standalone server with a PATH merged from the user's login shell plus common Node/npm paths so API routes can find `npm`, `npx`, model tooling, and skill installers. Server stdout/stderr goes to the Electron Logs directory at `server/server.log`.
 
 ---
 
@@ -197,6 +203,8 @@ Location: `~/.pi/agent/sessions/<encoded-cwd>/<timestamp>_<uuid>.jsonl`
 ---
 
 ## CSS Variables (`app/globals.css`)
+
+The visual system is Apple-inspired interface chrome: local system font stack, `#f5f5f7` light canvas, `#1d1d1f` ink, `#0066cc` action blue, dark-mode `#2997ff`, frosted bars, hairline borders, and pill controls for primary actions.
 
 ```
 --bg --bg-panel --bg-hover --bg-selected --border
