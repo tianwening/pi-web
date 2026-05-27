@@ -4,48 +4,17 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { spawn } = require("child_process");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const fs = require("fs");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require("path");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { reexecOutsideCodexNode } = require("./node-runtime");
 
 const pkgDir = path.join(__dirname, "..");
 const nextBin = require.resolve("next/dist/bin/next", { paths: [pkgDir] });
-const devServerPort = process.env.PI_WEB_DEV_SERVER_PORT || process.env.PORT || "30141";
+const devServerPort = process.env.PI_AGENT_DEV_SERVER_PORT || process.env.PORT || "30141";
 const defaultArgs = ["dev", "--webpack", "-p", devServerPort];
 
-function findAlternateNode() {
-  const current = fs.realpathSync.native(process.execPath);
-  const pathEntries = (process.env.PATH || "").split(path.delimiter).filter(Boolean);
-
-  for (const entry of pathEntries) {
-    const candidate = path.join(entry, process.platform === "win32" ? "node.exe" : "node");
-    try {
-      if (!fs.existsSync(candidate)) continue;
-      const resolved = fs.realpathSync.native(candidate);
-      if (resolved !== current) return candidate;
-    } catch {
-      // Ignore unreadable PATH entries.
-    }
-  }
-
-  return null;
-}
-
-const isCodexBundledNode = process.execPath.includes(`${path.sep}Codex.app${path.sep}`);
-if (isCodexBundledNode && process.env.PI_WEB_DEV_REEXEC !== "1") {
-  const alternateNode = findAlternateNode();
-  if (alternateNode) {
-    const child = spawn(alternateNode, [__filename, ...process.argv.slice(2)], {
-      cwd: pkgDir,
-      stdio: "inherit",
-      env: { ...process.env, PI_WEB_DEV_REEXEC: "1" },
-    });
-    child.on("exit", (code, signal) => {
-      if (signal) process.kill(process.pid, signal);
-      process.exit(code ?? 0);
-    });
-    return;
-  }
+if (reexecOutsideCodexNode(__filename, process.argv.slice(2), "PI_AGENT_DEV_REEXEC")) {
+  return;
 }
 
 const child = spawn(process.execPath, [nextBin, ...defaultArgs, ...process.argv.slice(2)], {

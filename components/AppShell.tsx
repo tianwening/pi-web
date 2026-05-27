@@ -242,7 +242,7 @@ export function AppShell() {
         explorerRefreshKey={explorerRefreshKey}
         onAtMention={handleAtMention}
       />
-      <div style={{ padding: "8px", flexShrink: 0, display: "flex", justifyContent: "space-between", gap: 4 }}>
+      <div style={{ padding: "10px", flexShrink: 0, display: "flex", justifyContent: "space-between", gap: 6, borderTop: "1px solid var(--border)" }}>
         {([
           {
             label: "Models",
@@ -278,13 +278,13 @@ export function AppShell() {
             title={label}
             style={{
               flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              height: 32, padding: 0, background: "none", border: "none",
-              borderRadius: 9, color: "var(--text-muted)", cursor: disabled ? "default" : "pointer",
+              height: 32, padding: 0, background: "var(--bg-hover)", border: "1px solid transparent",
+              borderRadius: "var(--radius-pill)", color: "var(--text-muted)", cursor: disabled ? "default" : "pointer",
               fontSize: 12, opacity: disabled ? 0.35 : 1,
-              transition: "background 0.12s, color 0.12s",
+              transition: "background 0.12s, color 0.12s, border-color 0.12s",
             }}
-            onMouseEnter={(e) => { if (!disabled) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text)"; } }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-muted)"; }}
+            onMouseEnter={(e) => { if (!disabled) { e.currentTarget.style.background = "var(--bg-panel)"; e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "var(--border)"; } }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "transparent"; }}
           >
             {icon}
             {label}
@@ -316,8 +316,10 @@ export function AppShell() {
       <div
         className={`sidebar-container${sidebarOpen ? " sidebar-open" : " sidebar-closed"}`}
         style={{
-          background: "var(--bg-panel)",
+          background: "var(--frosted-bg)",
           borderRight: "1px solid var(--border)",
+          backdropFilter: "saturate(180%) blur(22px)",
+          WebkitBackdropFilter: "saturate(180%) blur(22px)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -330,18 +332,18 @@ export function AppShell() {
       {/* Center: chat */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
         {/* Top bar with sidebar toggle */}
-        <div ref={topBarRef} style={{ display: "flex", alignItems: "center", flexShrink: 0, borderBottom: "1px solid var(--border)", height: 36, background: "var(--bg-panel)" }}>
+        <div ref={topBarRef} style={{ display: "flex", alignItems: "center", flexShrink: 0, borderBottom: "1px solid var(--border)", height: 44, background: "var(--frosted-bg)", backdropFilter: "saturate(180%) blur(22px)", WebkitBackdropFilter: "saturate(180%) blur(22px)" }}>
           <button
             onClick={() => setSidebarOpen((v) => !v)}
             title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
-              width: 36, height: 36, padding: 0,
-              background: "none", border: "none", borderRight: "1px solid var(--border)",
-              color: "var(--text-muted)", cursor: "pointer", flexShrink: 0, transition: "color 0.12s",
+              width: 34, height: 34, padding: 0, marginLeft: 6,
+              background: "transparent", border: "none", borderRadius: "50%",
+              color: "var(--text-muted)", cursor: "pointer", flexShrink: 0, transition: "color 0.12s, background 0.12s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--bg-hover)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
           >
             {sidebarOpen ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -363,12 +365,12 @@ export function AppShell() {
             aria-pressed={isDark}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
-              width: 36, height: 36, padding: 0,
-              background: "none", border: "none", borderRight: "1px solid var(--border)",
-              color: "var(--text-muted)", cursor: "pointer", flexShrink: 0, transition: "color 0.12s",
+              width: 34, height: 34, padding: 0,
+              background: "transparent", border: "none", borderRadius: "50%",
+              color: "var(--text-muted)", cursor: "pointer", flexShrink: 0, transition: "color 0.12s, background 0.12s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--bg-hover)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
           >
             {isDark ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -401,14 +403,13 @@ export function AppShell() {
                 onClick={() => toggleTopPanel("system")}
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
-                  height: "100%", padding: "0 12px",
+                  height: 32, padding: "0 12px", margin: "6px 0",
                   background: activeTopPanel === "system" ? "var(--bg-selected)" : "none",
-                  border: "none",
-                  borderTop: activeTopPanel === "system" ? "2px solid var(--accent)" : "2px solid transparent",
-                  borderRight: "1px solid var(--border)",
+                  border: "1px solid transparent",
+                  borderRadius: "var(--radius-pill)",
                   cursor: "pointer",
                   color: activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)",
-                  fontSize: 11, whiteSpace: "nowrap", transition: "color 0.1s, background 0.1s",
+                  fontSize: 12, whiteSpace: "nowrap", transition: "color 0.1s, background 0.1s",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = activeTopPanel === "system" ? "var(--text)" : "var(--text-muted)"; }}
@@ -518,8 +519,11 @@ export function AppShell() {
             }}>
               {activeTopPanel === "system" && (
                 <div style={{
-                  background: "var(--bg-panel)",
+                  background: "var(--frosted-bg)",
                   borderBottom: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-soft)",
+                  backdropFilter: "saturate(180%) blur(22px)",
+                  WebkitBackdropFilter: "saturate(180%) blur(22px)",
                 }}>
                   {systemPrompt ? (
                     <div style={{
@@ -573,7 +577,7 @@ export function AppShell() {
                 Select a session from the sidebar
               </div>
             ) : (
-              <div style={{ position: "absolute", top: 12, left: 12, display: "flex", alignItems: "flex-start", gap: 8, userSelect: "none", pointerEvents: "none" }}>
+              <div style={{ position: "absolute", top: 28, left: 28, display: "flex", alignItems: "flex-start", gap: 12, userSelect: "none", pointerEvents: "none" }}>
                 <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7, flexShrink: 0 }}>
                   <line x1="20" y1="12" x2="4" y2="12" /><polyline points="10 6 4 12 10 18" />
                 </svg>
@@ -601,7 +605,7 @@ export function AppShell() {
         }}
       >
         {/* Right panel tab bar */}
-        <div style={{ display: "flex", alignItems: "center", flexShrink: 0, background: "var(--bg-panel)", borderBottom: "1px solid var(--border)", height: 36 }}>
+        <div style={{ display: "flex", alignItems: "center", flexShrink: 0, background: "var(--frosted-bg)", borderBottom: "1px solid var(--border)", height: 44, backdropFilter: "saturate(180%) blur(22px)", WebkitBackdropFilter: "saturate(180%) blur(22px)" }}>
           <div style={{ flex: 1, overflow: "hidden" }}>
             <TabBar
               tabs={fileTabs}

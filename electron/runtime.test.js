@@ -4,7 +4,9 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const {
+  buildServerEnv,
   getDevServerUrl,
+  joinUniquePaths,
   getRuntimeMode,
   getServerPath,
 } = require("./runtime");
@@ -20,7 +22,7 @@ test("uses the bundled standalone server when Electron is packaged", () => {
 test("allows forcing standalone mode in an unpackaged Electron process", () => {
   assert.equal(
     getRuntimeMode({
-      env: { PI_WEB_ELECTRON_MODE: "production" },
+      env: { PI_AGENT_ELECTRON_MODE: "production" },
       isPackaged: false,
     }),
     "production",
@@ -30,14 +32,14 @@ test("allows forcing standalone mode in an unpackaged Electron process", () => {
 test("builds the development server URL from env overrides", () => {
   assert.equal(
     getDevServerUrl({
-      env: { PI_WEB_DEV_SERVER_URL: "http://localhost:4040" },
+      env: { PI_AGENT_DEV_SERVER_URL: "http://localhost:4040" },
     }),
     "http://localhost:4040",
   );
 
   assert.equal(
     getDevServerUrl({
-      env: { PI_WEB_DEV_SERVER_PORT: "3030" },
+      env: { PI_AGENT_DEV_SERVER_PORT: "3030" },
     }),
     "http://localhost:3030",
   );
@@ -45,7 +47,26 @@ test("builds the development server URL from env overrides", () => {
 
 test("resolves the standalone server path under the app root", () => {
   assert.equal(
-    getServerPath("/tmp/pi-web"),
-    "/tmp/pi-web/.next/standalone/server.js",
+    getServerPath("/tmp/pi-agent"),
+    "/tmp/pi-agent/.next/standalone/server.js",
   );
+});
+
+test("deduplicates PATH entries while preserving order", () => {
+  assert.equal(
+    joinUniquePaths("/a:/b", "/b:/c"),
+    "/a:/b:/c",
+  );
+});
+
+test("adds common user and system paths to packaged server env", () => {
+  const env = buildServerEnv(
+    { HOME: "/Users/example", PATH: "/existing" },
+    { NODE_ENV: "production" },
+  );
+
+  assert.equal(env.NODE_ENV, "production");
+  assert.match(env.PATH, /\/Users\/example\/\.npm-global\/bin/);
+  assert.match(env.PATH, /\/opt\/homebrew\/bin/);
+  assert.match(env.PATH, /\/existing/);
 });
