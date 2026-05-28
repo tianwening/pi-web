@@ -204,7 +204,7 @@ Location: `~/.pi/agent/sessions/<encoded-cwd>/<timestamp>_<uuid>.jsonl`
 
 ## CSS Variables (`app/globals.css`)
 
-The visual system is Apple-inspired interface chrome: local system font stack, `#f5f5f7` light canvas, `#1d1d1f` ink, `#0066cc` action blue, dark-mode `#2997ff`, frosted bars, hairline borders, and pill controls for primary actions.
+The visual system is Apple-inspired interface chrome: local system font stack, `#f5f5f7` light canvas, `#1d1d1f` ink, `#0066cc` action blue, dark-mode `#2997ff`, frosted bars, hairline borders, and pill controls for primary actions. Chat Markdown should stay low-noise: light heading rhythm, soft inline code pills, hairline tables/dividers, and Codex-style code blocks with a single rounded muted surface, no line numbers, and an icon-only copy action.
 
 ```
 --bg --bg-panel --bg-hover --bg-selected --border

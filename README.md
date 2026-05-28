@@ -47,7 +47,7 @@ PORT=8080 pi-agent                 # 也支持环境变量
 - **文件浏览器** — 从侧边栏浏览当前 cwd，打开文件标签页，或将路径插入输入框
 - **状态面板** — 顶栏显示 token、缓存、费用和上下文窗口占用
 - **主题与声音** — 支持亮/暗主题切换和任务完成提示音
-- **Apple 风格界面** — 使用本地系统字体、纸白/深墨色系、系统蓝强调色、毛玻璃顶栏和胶囊控件
+- **Apple 风格界面** — 使用本地系统字体、纸白/深墨色系、系统蓝强调色、毛玻璃顶栏、胶囊控件和低噪音 Markdown/代码块排版
 
 ## 注意事项
 
@@ -55,7 +55,7 @@ PORT=8080 pi-agent                 # 也支持环境变量
 - **模型配置** — 从智能体数据目录下的 `models.json` 读取可用模型，可在侧边栏底部的「Models」面板中编辑。
 - **Skills 配置** — Skills 面板使用 pi 的 `DefaultResourceLoader`，会合并 settings、包内 Skills 和项目 Skills；安装时调用 `npx skills add --agent pi`。
 - **项目 Skills** — 仓库内 `.pi/skills/awesome-design-md` 提供 VoltAgent/awesome-design-md 的 DESIGN.md 使用指引，可在前端设计任务中按站点 slug 拉取设计系统参考。
-- **界面视觉系统** — 全局 CSS token 采用 Apple-inspired interface chrome：亮色 `#f5f5f7` 画布、`#1d1d1f` 文本、`#0066cc` 操作蓝，暗色使用 `#2997ff` 链接/强调色。
+- **界面视觉系统** — 全局 CSS token 采用 Apple-inspired interface chrome：亮色 `#f5f5f7` 画布、`#1d1d1f` 文本、`#0066cc` 操作蓝，暗色使用 `#2997ff` 链接/强调色；对话 Markdown 使用轻量标题、柔和 inline code、hairline 表格/分隔线和 Codex 风格的低噪音代码块。
 - **会话删除** — 只删除单个 `.jsonl` 会话文件，并会把直接子会话 re-parent 到被删会话的父会话。
 - **默认工作目录** — 新建默认 cwd 时会创建 `~/pi-cwd-YYYYMMDD`。
 

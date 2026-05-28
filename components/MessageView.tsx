@@ -537,11 +537,13 @@ function TextBlock({ block }: { block: TextContent }) {
             return (
               <code
                 style={{
-                  background: "var(--tool-bg)",
-                  padding: "1px 4px",
+                  background: "color-mix(in srgb, var(--text) 7%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--text) 10%, transparent)",
+                  padding: "0.08em 0.36em",
                   borderRadius: 6,
                   fontFamily: "var(--font-mono)",
-                  fontSize: "0.9em",
+                  fontSize: "0.92em",
+                  whiteSpace: "break-spaces",
                 }}
                 {...props}
               >
@@ -566,10 +568,11 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
   return (
     <div
       style={{
-        border: "1px solid var(--border)",
-        borderRadius: 12,
+        border: "1px solid color-mix(in srgb, var(--text-dim) 18%, transparent)",
+        borderRadius: 10,
         overflow: "hidden",
         fontSize: 13,
+        background: "color-mix(in srgb, var(--bg-panel) 72%, transparent)",
       }}
     >
       <button
@@ -579,8 +582,8 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
           alignItems: "center",
           gap: 6,
           width: "100%",
-          padding: "6px 10px",
-          background: "var(--tool-bg)",
+          padding: "6px 9px",
+          background: "transparent",
           border: "none",
           color: "var(--text-muted)",
           cursor: "pointer",
@@ -601,8 +604,8 @@ function ThinkingBlock({ block, duration }: { block: ThinkingContent; duration?:
             fontSize: 12,
             lineHeight: 1.6,
             whiteSpace: "pre-wrap",
-            background: "var(--tool-bg)",
-            borderTop: "1px solid var(--border)",
+            background: "color-mix(in srgb, var(--text) 3%, transparent)",
+            borderTop: "1px solid color-mix(in srgb, var(--text-dim) 14%, transparent)",
           }}
         >
           {block.thinking}
@@ -627,11 +630,11 @@ function ToolCallBlock({ block, result, duration }: { block: ToolCallContent; re
   return (
     <div
       style={{
-        borderRadius: 12,
+        borderRadius: 10,
         overflow: "hidden",
         fontSize: 12,
-        border: isError ? "1px solid rgba(255,59,48,0.34)" : "1px solid rgba(52,199,89,0.24)",
-        background: isError ? "rgba(255,59,48,0.06)" : "rgba(52,199,89,0.05)",
+        border: isError ? "1px solid rgba(255,59,48,0.26)" : "1px solid color-mix(in srgb, var(--text-dim) 18%, transparent)",
+        background: isError ? "rgba(255,59,48,0.045)" : "color-mix(in srgb, var(--bg-panel) 72%, transparent)",
       }}
     >
       {/* ── Tool call header ── */}
@@ -642,7 +645,7 @@ function ToolCallBlock({ block, result, duration }: { block: ToolCallContent; re
           alignItems: "center",
           gap: 7,
           width: "100%",
-          padding: "6px 10px",
+          padding: "6px 9px",
           background: "none",
           border: "none",
           color: "var(--text-muted)",
@@ -652,7 +655,7 @@ function ToolCallBlock({ block, result, duration }: { block: ToolCallContent; re
           minWidth: 0,
         }}
       >
-        <span style={{ color: isError ? "#ff3b30" : "#34c759", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, flexShrink: 0 }}>
+        <span style={{ color: isError ? "#ff3b30" : "var(--text-muted)", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, flexShrink: 0 }}>
           {block.toolName}
         </span>
         <span style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
@@ -676,8 +679,8 @@ function ToolCallBlock({ block, result, duration }: { block: ToolCallContent; re
             fontSize: 12,
             lineHeight: 1.5,
             overflow: "auto",
-            background: "var(--bg-subtle)",
-            borderTop: isError ? "1px solid rgba(255,59,48,0.24)" : "1px solid rgba(52,199,89,0.20)",
+            background: "color-mix(in srgb, var(--text) 3%, transparent)",
+            borderTop: isError ? "1px solid rgba(255,59,48,0.20)" : "1px solid color-mix(in srgb, var(--text-dim) 14%, transparent)",
             whiteSpace: "pre-wrap",
             wordBreak: "break-all",
           }}
@@ -706,8 +709,8 @@ function PairedResult({ text, isEmpty, isError }: {
   return (
     <div
       style={{
-        borderTop: `1px solid ${isError ? "rgba(255,59,48,0.28)" : "rgba(52,199,89,0.16)"}`,
-        background: isError ? "rgba(255,59,48,0.05)" : "var(--bg-subtle)",
+        borderTop: `1px solid ${isError ? "rgba(255,59,48,0.24)" : "color-mix(in srgb, var(--text-dim) 14%, transparent)"}`,
+        background: isError ? "rgba(255,59,48,0.04)" : "color-mix(in srgb, var(--text) 3%, transparent)",
       }}
     >
       <pre
@@ -719,7 +722,7 @@ function PairedResult({ text, isEmpty, isError }: {
           lineHeight: 1.5,
           overflow: "auto",
           maxHeight: 400,
-          background: "var(--bg)",
+          background: "transparent",
           whiteSpace: "pre-wrap",
           wordBreak: "break-all",
           fontStyle: isEmpty ? "italic" : "normal",
@@ -782,53 +785,71 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
     <div
       style={{
         position: "relative",
-        marginTop: 4,
-        marginBottom: 4,
+        marginTop: 10,
+        marginBottom: 14,
         borderRadius: 12,
         overflow: "hidden",
-        border: "1px solid var(--border)",
+        background: isDark
+          ? "color-mix(in srgb, var(--bg-panel) 82%, #ffffff 6%)"
+          : "color-mix(in srgb, var(--text) 7%, transparent)",
       }}
     >
       <div
         style={{
-          padding: "3px 10px",
-          background: "var(--tool-bg)",
-          borderBottom: "1px solid var(--border)",
-          fontSize: 11,
-          color: "var(--text-dim)",
+          padding: "12px 16px 2px",
+          background: "transparent",
+          fontSize: 13,
+          lineHeight: 1,
+          color: "var(--text-muted)",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
         }}
       >
-        <span>{lang}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600 }}>{lang || "text"}</span>
         <button
           onClick={copy}
+          title={copied ? "Copied" : "Copy code"}
           style={{
             background: "none",
             border: "none",
             color: "var(--text-muted)",
             cursor: "pointer",
-            fontSize: 11,
+            width: 24,
+            height: 24,
+            padding: 0,
+            borderRadius: 6,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: -3,
           }}
+          aria-label={copied ? "Copied" : "Copy code"}
         >
-          {copied ? "copied" : "copy"}
+          {copied ? (
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2.5" ry="2.5" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          )}
         </button>
       </div>
       <SyntaxHighlighter
         language={lang || "text"}
         style={isDark ? vscDarkPlus : vs}
-        showLineNumbers
-        lineNumberStyle={{ color: "var(--text-dim)", fontStyle: "normal" }}
         customStyle={{
           margin: 0,
-          padding: "10px 12px",
-          fontSize: 12.5,
-          lineHeight: 1.6,
+          padding: "18px 18px 22px",
+          fontSize: 15,
+          lineHeight: 1.65,
           borderRadius: 0,
-          background: "var(--bg)",
+          background: "transparent",
         }}
-        codeTagProps={{ style: { fontFamily: "var(--font-mono)" } }}
+        codeTagProps={{ style: { fontFamily: "var(--font-mono)", letterSpacing: 0 } }}
       >
         {code}
       </SyntaxHighlighter>
