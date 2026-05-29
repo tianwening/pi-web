@@ -248,12 +248,6 @@ export function AppShell({ initialSidebarWidth = null }: AppShellProps) {
     setRightPanelOpen(false);
   }, []);
 
-  const handleConfirmCloseAllFileTabs = useCallback(() => {
-    if (fileTabs.length === 0) return;
-    if (!window.confirm(`关闭全部 ${fileTabs.length} 个文件标签页？`)) return;
-    handleCloseAllFileTabs();
-  }, [fileTabs.length, handleCloseAllFileTabs]);
-
   useEffect(() => {
     if (!sidebarWidthLoadedRef.current) {
       sidebarWidthLoadedRef.current = true;
@@ -711,11 +705,28 @@ export function AppShell({ initialSidebarWidth = null }: AppShellProps) {
           flexDirection: "column",
           borderLeft: "1px solid var(--border)",
           background: "var(--bg)",
-        }}
+          }}
       >
         {/* Right panel tab bar */}
         <div style={{ display: "flex", alignItems: "center", flexShrink: 0, background: "var(--frosted-bg)", borderBottom: "1px solid var(--border)", height: 44, backdropFilter: "saturate(180%) blur(22px)", WebkitBackdropFilter: "saturate(180%) blur(22px)" }}>
-          <div style={{ flex: 1, overflow: "hidden" }}>
+          {/* Close panel button inside tab bar */}
+          <button
+            onClick={() => setRightPanelOpen(false)}
+            title="Hide file panel"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 30, height: 30, marginLeft: 6, padding: 0,
+              background: "transparent", border: "none", borderRadius: "50%",
+              color: "var(--text-muted)", cursor: "pointer", flexShrink: 0,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="15" y1="3" x2="15" y2="21" />
+            </svg>
+          </button>
+          <div style={{ flex: 1, overflow: "visible", minWidth: 0 }}>
             <TabBar
               tabs={fileTabs}
               activeTabId={activeFileTabId ?? ""}
@@ -724,36 +735,6 @@ export function AppShell({ initialSidebarWidth = null }: AppShellProps) {
               onCloseAllTabs={handleCloseAllFileTabs}
             />
           </div>
-          {fileTabs.length > 0 && (
-            <button
-              onClick={handleConfirmCloseAllFileTabs}
-              title="关闭全部文件标签页"
-              style={{
-                height: 30,
-                padding: "0 10px",
-                marginRight: 42,
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-pill)",
-                background: "var(--bg-panel)",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                fontSize: 12,
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.color = "var(--text)";
-                event.currentTarget.style.background = "var(--bg-hover)";
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.color = "var(--text-muted)";
-                event.currentTarget.style.background = "var(--bg-panel)";
-              }}
-            >
-              关闭全部
-            </button>
-          )}
-
         </div>
 
         {/* File content */}
@@ -774,7 +755,7 @@ export function AppShell({ initialSidebarWidth = null }: AppShellProps) {
       title={rightPanelOpen ? "Hide file panel" : "Show file panel"}
       style={{
         position: "fixed", top: 0, right: 0, zIndex: 300,
-        display: "flex", alignItems: "center", justifyContent: "center",
+        display: rightPanelOpen ? "none" : "flex", alignItems: "center", justifyContent: "center",
         width: 36, height: 36, padding: 0,
         background: "var(--bg-panel)", border: "none", borderLeft: "1px solid var(--border)", borderBottom: "1px solid var(--border)",
         color: rightPanelOpen ? "var(--text)" : "var(--text-muted)",

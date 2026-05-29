@@ -24,7 +24,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
   useEffect(() => {
     if (!menu) return;
 
-    const closeMenu = () => setMenu(null);
+    const closeMenu = () => { setMenu(null); };
     window.addEventListener("click", closeMenu);
     window.addEventListener("blur", closeMenu);
     return () => {
@@ -47,16 +47,14 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
   };
 
   const closeAllTabs = () => {
-    if (!window.confirm(`关闭全部 ${tabs.length} 个文件标签页？`)) return;
     onCloseAllTabs();
     setMenu(null);
   };
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", minWidth: 0, height: 44 }}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", height: 44 }}>
         <div
-          onContextMenu={openMenu}
           style={{
             display: "flex",
             alignItems: "center",
@@ -76,7 +74,6 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
               <div
                 key={tab.id}
                 onClick={() => onSelectTab(tab.id)}
-                onContextMenu={openMenu}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -157,7 +154,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
               borderRadius: "50%",
               color: "var(--text-muted)",
               cursor: "pointer",
-              flexShrink: 0,
+              flexShrink: 0
             }}
             onMouseEnter={(event) => {
               event.currentTarget.style.background = "var(--bg-hover)";
@@ -185,15 +182,32 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
             left: menu.x,
             zIndex: 700,
             minWidth: 156,
-            padding: 6,
+            padding: "6px 4px",
             background: "var(--frosted-bg)",
             border: "1px solid var(--border)",
-            borderRadius: 8,
-            boxShadow: "var(--shadow-popover)",
-            backdropFilter: "saturate(180%) blur(22px)",
-            WebkitBackdropFilter: "saturate(180%) blur(22px)",
+            borderRadius: 10,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06)",
+            backdropFilter: "saturate(180%) blur(24px)",
+            WebkitBackdropFilter: "saturate(180%) blur(24px)",
+            animation: "pi-hovercard-in 0.15s ease-out",
           }}
         >
+          {/* Arrow */}
+          <div
+            style={{
+              position: "absolute",
+              top: -5,
+              left: 14,
+              width: 10,
+              height: 10,
+              background: "var(--frosted-bg)",
+              border: "1px solid var(--border)",
+              borderRight: "none",
+              borderBottom: "none",
+              transform: "rotate(45deg)",
+              backdropFilter: "saturate(180%) blur(24px)",
+            }}
+          />
           <button
             onClick={closeAllTabs}
             style={{
@@ -207,10 +221,17 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onCloseAllT
               cursor: "pointer",
               fontSize: 12,
               textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
             onMouseEnter={(event) => { event.currentTarget.style.background = "var(--bg-hover)"; }}
             onMouseLeave={(event) => { event.currentTarget.style.background = "transparent"; }}
           >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.6 }}>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
             关闭全部标签页
           </button>
         </div>
