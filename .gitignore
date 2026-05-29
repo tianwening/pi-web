@@ -19,6 +19,11 @@
 
 # production
 /build
+!/build/
+/build/*
+!/build/pi-agent-icon.png
+!/build/icon.png
+!/build/icon.icns
 /dist
 
 # misc

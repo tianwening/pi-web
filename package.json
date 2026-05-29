@@ -1,5 +1,5 @@
 {
-  "name": "@agegr/pi-agent",
+  "name": "@jerry/pi-agent",
   "version": "0.6.11",
   "description": "Interface for the pi coding agent",
   "main": "electron/main.js",
@@ -35,15 +35,20 @@
     "appId": "works.earendil.pi-agent",
     "productName": "Pi Agent",
     "asar": false,
+    "directories": {
+      "buildResources": "build"
+    },
     "files": [
       "electron/**/*",
       ".next/standalone/**/*",
       ".next/static/**/*",
+      "build/icon.png",
       "public/**/*",
       "package.json"
     ],
     "mac": {
       "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
       "target": [
         "dmg",
         "zip"
@@ -56,6 +61,7 @@
     },
     "linux": {
       "category": "Development",
+      "icon": "build/icon.png",
       "target": [
         "AppImage",
         "deb"

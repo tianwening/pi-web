@@ -12,8 +12,28 @@ import { BranchNavigator } from "./BranchNavigator";
 import { useTheme } from "@/hooks/useTheme";
 import type { SessionInfo, SessionTreeNode } from "@/lib/types";
 import type { ChatInputHandle } from "./ChatInput";
+import { DEFAULT_SIDEBAR_WIDTH, clampSidebarWidth, readSidebarWidthFromCookie, readStoredSidebarWidth } from "@/lib/panel-layout";
 
-export function AppShell() {
+const SIDEBAR_WIDTH_STORAGE_KEY = "pi-sidebar-width";
+
+function saveSidebarWidth(width: number) {
+  window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(width));
+  document.cookie = `${SIDEBAR_WIDTH_STORAGE_KEY}=${encodeURIComponent(String(width))}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
+function loadSidebarWidth(rightPanelOpen: boolean) {
+  return readStoredSidebarWidth(
+    window.localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY),
+    window.innerWidth,
+    rightPanelOpen,
+  ) ?? readSidebarWidthFromCookie(document.cookie, window.innerWidth, rightPanelOpen);
+}
+
+type AppShellProps = {
+  initialSidebarWidth?: number | null;
+};
+
+export function AppShell({ initialSidebarWidth = null }: AppShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isDark, toggleTheme } = useTheme();
@@ -27,8 +47,12 @@ export function AppShell() {
   const [modelsRefreshKey, setModelsRefreshKey] = useState(0);
   const [skillsConfigOpen, setSkillsConfigOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(() => initialSidebarWidth ?? DEFAULT_SIDEBAR_WIDTH);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
   const chatInputRef = useRef<ChatInputHandle | null>(null);
   const topBarRef = useRef<HTMLDivElement>(null);
+  const sidebarWidthLoadedRef = useRef(initialSidebarWidth !== null);
+  const sidebarWidthRestoredRef = useRef(false);
 
   // Branch navigator state — populated by ChatWindow via onBranchDataChange
   const [branchTree, setBranchTree] = useState<SessionTreeNode[]>([]);
@@ -218,6 +242,66 @@ export function AppShell() {
     });
   }, [fileTabs]);
 
+  const handleCloseAllFileTabs = useCallback(() => {
+    setFileTabs([]);
+    setActiveFileTabId(null);
+    setRightPanelOpen(false);
+  }, []);
+
+  const handleConfirmCloseAllFileTabs = useCallback(() => {
+    if (fileTabs.length === 0) return;
+    if (!window.confirm(`关闭全部 ${fileTabs.length} 个文件标签页？`)) return;
+    handleCloseAllFileTabs();
+  }, [fileTabs.length, handleCloseAllFileTabs]);
+
+  useEffect(() => {
+    if (!sidebarWidthLoadedRef.current) {
+      sidebarWidthLoadedRef.current = true;
+      const storedWidth = loadSidebarWidth(rightPanelOpen);
+      if (storedWidth !== null) {
+        setSidebarWidth(storedWidth);
+      }
+    }
+
+    const handleResize = () => {
+      setSidebarWidth((width) => clampSidebarWidth(width, window.innerWidth, rightPanelOpen));
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [rightPanelOpen]);
+
+  useEffect(() => {
+    if (!sidebarWidthRestoredRef.current) {
+      sidebarWidthRestoredRef.current = true;
+      return;
+    }
+    saveSidebarWidth(sidebarWidth);
+  }, [sidebarWidth]);
+
+  const handleSidebarResizeStart = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!sidebarOpen) return;
+
+    event.preventDefault();
+    setIsResizingSidebar(true);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const nextWidth = clampSidebarWidth(moveEvent.clientX, window.innerWidth, rightPanelOpen);
+      setSidebarWidth(nextWidth);
+      saveSidebarWidth(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingSidebar(false);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, [rightPanelOpen, sidebarOpen]);
+
   // Show chat area if a session is selected, or if we have a cwd to start a new session in
   const effectiveNewSessionCwd = newSessionCwd ?? (selectedSession === null && activeCwd ? activeCwd : null);
   const showChat = selectedSession !== null || effectiveNewSessionCwd !== null;
@@ -316,6 +400,8 @@ export function AppShell() {
       <div
         className={`sidebar-container${sidebarOpen ? " sidebar-open" : " sidebar-closed"}`}
         style={{
+          width: sidebarOpen ? sidebarWidth : 0,
+          minWidth: sidebarOpen ? sidebarWidth : 0,
           background: "var(--frosted-bg)",
           borderRight: "1px solid var(--border)",
           backdropFilter: "saturate(180%) blur(22px)",
@@ -324,9 +410,32 @@ export function AppShell() {
           flexDirection: "column",
           flexShrink: 0,
           zIndex: 200,
+          transition: isResizingSidebar ? "none" : undefined,
         }}
       >
         {sidebarContent}
+        {sidebarOpen && (
+          <div
+            className="sidebar-resize-handle"
+            onMouseDown={handleSidebarResizeStart}
+            onDoubleClick={() => {
+              setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
+              saveSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
+            }}
+            title="Drag to resize sidebar"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: -4,
+              bottom: 0,
+              width: 8,
+              minWidth: 8,
+              maxWidth: 8,
+              cursor: "col-resize",
+              zIndex: 2,
+            }}
+          />
+        )}
       </div>
 
       {/* Center: chat */}
@@ -612,8 +721,38 @@ export function AppShell() {
               activeTabId={activeFileTabId ?? ""}
               onSelectTab={setActiveFileTabId}
               onCloseTab={handleCloseFileTab}
+              onCloseAllTabs={handleCloseAllFileTabs}
             />
           </div>
+          {fileTabs.length > 0 && (
+            <button
+              onClick={handleConfirmCloseAllFileTabs}
+              title="关闭全部文件标签页"
+              style={{
+                height: 30,
+                padding: "0 10px",
+                marginRight: 42,
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-pill)",
+                background: "var(--bg-panel)",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                fontSize: 12,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+              onMouseEnter={(event) => {
+                event.currentTarget.style.color = "var(--text)";
+                event.currentTarget.style.background = "var(--bg-hover)";
+              }}
+              onMouseLeave={(event) => {
+                event.currentTarget.style.color = "var(--text-muted)";
+                event.currentTarget.style.background = "var(--bg-panel)";
+              }}
+            >
+              关闭全部
+            </button>
+          )}
 
         </div>
 

@@ -1,10 +1,15 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { AppShell } from "@/components/AppShell";
+import { readStoredInitialSidebarWidth } from "@/lib/panel-layout";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const initialSidebarWidth = readStoredInitialSidebarWidth(cookieStore.get("pi-sidebar-width")?.value ?? null);
+
   return (
     <Suspense>
-      <AppShell />
+      <AppShell initialSidebarWidth={initialSidebarWidth} />
     </Suspense>
   );
 }

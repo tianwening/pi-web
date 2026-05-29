@@ -7,13 +7,13 @@
 **无需安装，直接运行 CLI：**
 
 ```bash
-npx @agegr/pi-agent@latest
+npx @jerry/pi-agent@latest
 ```
 
 **或全局安装后使用：**
 
 ```bash
-npm install -g @agegr/pi-agent
+npm install -g @jerry/pi-agent
 pi-agent
 ```
 
@@ -44,7 +44,8 @@ PORT=8080 pi-agent                 # 也支持环境变量
 - **压缩会话** — 对长会话进行摘要，节省上下文窗口
 - **引导 / 追加** — 在智能体运行时 steer，或排队 follow-up
 - **图片输入** — 支持粘贴、选择和拖放图片，随消息发送给智能体
-- **文件浏览器** — 从侧边栏浏览当前 cwd，打开文件标签页，或将路径插入输入框
+- **文件浏览器** — 从可拖拽宽度且会在刷新后保持尺寸的侧边栏浏览当前 cwd，打开文件标签页，或将路径插入输入框
+- **文件标签页** — 右键文件预览 tabs 可打开菜单，并二次确认关闭全部已打开文件
 - **状态面板** — 顶栏显示 token、缓存、费用和上下文窗口占用
 - **主题与声音** — 支持亮/暗主题切换和任务完成提示音
 - **Apple 风格界面** — 使用本地系统字体、纸白/深墨色系、系统蓝强调色、毛玻璃顶栏、胶囊控件和低噪音 Markdown/代码块排版
@@ -86,9 +87,11 @@ npm run desktop:dist:win
 npm run desktop:dist:linux
 ```
 
-Electron 开发命令会自动管理开发服务器：先释放默认端口 `30141`，再启动 Next dev server，最后打开 Electron 并连接该服务器。`desktop:start` 会设置 `PI_AGENT_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会运行 standalone Next server，并绑定到本机随机端口。
+Electron 开发命令会自动管理开发服务器：先释放默认端口 `30141`，再启动 Next dev server，最后打开 Electron 并连接该服务器。`desktop:start` 会设置 `PI_AGENT_ELECTRON_MODE=production`，用于本地验证 standalone 输出。打包模式会以隐藏的 Electron utility process 运行 standalone Next server，并绑定到本机随机端口，避免在 Dock 里显示成第二个应用。
 
 桌面构建不依赖 Google Fonts；界面使用本地系统字体栈，避免离线或受限网络环境下 `next/font` 拉取字体导致构建失败。
+
+桌面应用图标资源位于 `build/`：源图为 `build/pi-agent-icon.png`，打包使用 `build/icon.icns`（macOS）和 `build/icon.png`（Linux/运行时窗口图标）。更新图标后需要重新运行桌面打包命令，Finder 可能还会短暂缓存旧 `.app` 图标。
 
 桌面打包命令会检测是否运行在 Codex.app 内置 Node 下；如果是，会自动 re-exec 到 PATH 中的其他 Node，再运行 Next build、prepare 和 electron-builder，避免 macOS native addon 的 Team ID 校验失败。
 
@@ -132,6 +135,7 @@ scripts/
   start-desktop.js   # production runtime 启动 Electron
 electron/
   main.js            # Electron 主进程
+  server-process.js  # packaged standalone server 后台进程启动器
   runtime.js         # dev/packaged runtime 路径判断
 ```
 

@@ -7,6 +7,8 @@ npm run dev   # port 30141
 npm run electron:dev # restarts port 30141 dev server and opens Electron
 ```
 
+Published package/CLI: `@jerry/pi-agent` (binary `pi-agent`).
+
 Typecheck: `node_modules/.bin/tsc --noEmit`  
 Lint: `npm run lint`  
 Electron dev: `npm run electron:dev` terminates any existing listener on port 30141, starts the Next dev server, waits for it, then opens Electron.
@@ -81,9 +83,10 @@ lib/
   types.ts            shared TypeScript types
   pi-types.ts         local AgentSession/tool type shims
   normalize.ts        normalizeToolCalls() — field name mismatch between file format and our types
+  panel-layout.ts     shared panel sizing constants and clamp helpers
 
 components/
-  AppShell.tsx        layout + URL state + tab management
+  AppShell.tsx        layout + URL state + tab management; owns resizable sidebar width
   SessionSidebar.tsx  session tree + FileExplorer
   ChatWindow.tsx      messages + streaming + SSE + fork/navigate logic
   ChatInput.tsx       input bar + model/thinking/tools/compact controls
@@ -96,7 +99,7 @@ components/
   FileExplorer.tsx    file tree inside sidebar
   FileIcons.tsx       extension-aware file/folder icons
   FileViewer.tsx      file content in a tab
-  TabBar.tsx          tab bar (Chat + open file tabs)
+  TabBar.tsx          open file tab bar with right-click close-all confirmation
 
 hooks/
   useAgentSession.ts  agent/session request helper hook
@@ -120,6 +123,7 @@ scripts/
 
 electron/
   main.js             Electron shell; starts packaged Next server or attaches to dev server
+  server-process.js   packaged Next server launcher; prefers hidden Electron utility process
   runtime.js          runtime path/mode helpers
   runtime.test.js     runtime helper tests
 ```
@@ -179,8 +183,11 @@ OAuth state comes from `AuthStorage` via `/api/auth/providers`. API-key provider
 ### Images, steering, follow-ups, and audio
 `ChatInput` supports pasted/attached images, sends them as base64 image blocks, and can queue `steer` or `follow_up` while streaming. `useAudio()` stores `pi-sound-enabled` in localStorage and plays a short completion sound.
 
+### Panels and file tabs
+The desktop sidebar defaults to its minimum width, can be widened by dragging its right edge, and is clamped so the center chat area keeps usable space. The chosen sidebar width is saved to both `localStorage` and a `pi-sidebar-width` cookie; the cookie is read in `app/page.tsx` so the first render uses the saved width without a refresh-time jump from the 260px default. File preview tabs live in the right panel; right-clicking the tab strip opens a close-all action that requires a second confirmation click.
+
 ### Desktop packaging
-`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port; `npm run electron:dev` owns the development flow by terminating an existing port 30141 listener, starting the Next dev server, and then opening Electron. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output. Desktop packaging scripts must re-exec out of Codex.app bundled Node before loading native build dependencies such as Next SWC, lightningcss, or iconv-corefoundation. Desktop builds must not depend on Google Fonts or other build-time external font downloads; use the local system font stack. Packaged Electron must start the standalone server with a PATH merged from the user's login shell plus common Node/npm paths so API routes can find `npm`, `npx`, model tooling, and skill installers. Server stdout/stderr goes to the Electron Logs directory at `server/server.log`.
+`next.config.ts` uses `output: "standalone"` and externalizes pi packages. Packaged Electron starts the standalone Next server on a random localhost port as a hidden Electron utility process, so it does not appear as a second Dock app; `npm run electron:dev` owns the development flow by terminating an existing port 30141 listener, starting the Next dev server, and then opening Electron. `npm run desktop:start` forces production runtime via `scripts/start-desktop.js`, so it requires a prior build/prepare output. Desktop packaging scripts must re-exec out of Codex.app bundled Node before loading native build dependencies such as Next SWC, lightningcss, or iconv-corefoundation. Desktop builds must not depend on Google Fonts or other build-time external font downloads; use the local system font stack. Desktop icons live under `build/`: `pi-agent-icon.png` is the source art, `icon.icns` is used for macOS packaging, and `icon.png` is used for Linux/runtime window icons. Packaged Electron must start the standalone server with a PATH merged from the user's login shell plus common Node/npm paths so API routes can find `npm`, `npx`, model tooling, and skill installers. Server stdout/stderr goes to the Electron Logs directory at `server/server.log`.
 
 ---
 

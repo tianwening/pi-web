@@ -1,7 +1,7 @@
 "use strict";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, shell, utilityProcess } = require("electron");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { spawn } = require("child_process");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -14,12 +14,18 @@ const path = require("path");
 const fs = require("fs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { buildServerEnv, getDevServerUrl, getRuntimeMode, getServerPath } = require("./runtime");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { startServerProcess } = require("./server-process");
 
 let mainWindow = null;
 let serverProcess = null;
 
 function getAppRoot() {
   return app.isPackaged ? app.getAppPath() : path.join(__dirname, "..");
+}
+
+function getWindowIconPath() {
+  return path.join(getAppRoot(), "build", "icon.png");
 }
 
 function getPort() {
@@ -69,22 +75,22 @@ function waitForServer(url, timeoutMs = 30000) {
 
 function startNextServer(port) {
   const serverPath = getServerPath(getAppRoot());
-  const env = buildServerEnv(process.env, {
-    ELECTRON_RUN_AS_NODE: "1",
+  const serverEnv = buildServerEnv(process.env, {
     HOSTNAME: "127.0.0.1",
     PORT: port,
     NODE_ENV: "production",
   });
 
-  const logDir = path.join(app.getPath("logs"), "server");
-  fs.mkdirSync(logDir, { recursive: true });
-  const logPath = path.join(logDir, "server.log");
-  const logFd = fs.openSync(logPath, "a");
-
-  serverProcess = spawn(process.execPath, [serverPath], {
-    cwd: path.dirname(serverPath),
-    env,
-    stdio: ["ignore", logFd, logFd],
+  serverProcess = startServerProcess({
+    app,
+    env: process.env,
+    fs,
+    path,
+    processExecPath: process.execPath,
+    serverPath,
+    serverEnv,
+    spawn,
+    utilityProcess,
   });
 
   serverProcess.on("exit", () => {
@@ -128,6 +134,7 @@ async function createWindow() {
     minWidth: 960,
     minHeight: 640,
     title: "Pi Agent",
+    icon: getWindowIconPath(),
     backgroundColor: "#0b0f14",
     webPreferences: {
       contextIsolation: true,
